@@ -15,15 +15,14 @@ class App extends Component {
   }
 
   dragStart(type, id){
-    let item = document.querySelector(`#${type}-${id}`);
     this.setState( { oldId: id } );
-    item.className += ' dragging';
-    setTimeout(() => item.className = ` ${type}-placeholder`, 0);
+    
+    this.addToClass(type, id, 'dragging');
+    setTimeout(() => this.changeClass(type, id, `${type}-placeholder`), 0);
   }
 
   dragEnd(type, id){
-    let item = document.querySelector(`#${type}-${id}`);
-    item.className = type;
+    this.changeClass(type, id, type);
   }
 
   dragOver(e, type, id){
@@ -44,7 +43,7 @@ class App extends Component {
 
   dragEnter(e, type, id){
     // setup
-    // e.preventDefault();
+    e.preventDefault();
     let { listsData, oldId } = this.state;
 
     // change styling
