@@ -1,6 +1,10 @@
 export default {
   l: [
     {
+      list_id: 0,
+      list_name: 'fun list 0'
+    },
+    {
       list_id: 1,
       list_name: 'List 1',
     },
@@ -58,6 +62,11 @@ export default {
       card_id: 9,
       list_id: 3,
       card_name: 'Card 9'
+    },
+    {
+      card_id: 0,
+      list_id: 0,
+      card_name: 'fun time card 0'
     }
   ]
 };

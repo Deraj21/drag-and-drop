@@ -10,22 +10,36 @@ class App extends Component {
     this.state = {
       listsData: data.l,
       cardsData: data.c,
+      draggingType: '',
       oldId: null
     }
   }
 
-  dragStart(type, id){
-    this.setState( { oldId: id } );
+  listStart(e, type, id){
+    e.stopPropagation();
+    console.log('start:', type, id);
+    if (type === 'list'){
+      if (!this.state.draggingType){
+        type = 'list';
+      } else if (this.state.draggingType === 'card'){
+        type = 'card';
+      }
+    }
+    console.log(type);
+    this.setState( { oldId: id, draggingType: type } );
     
     this.addToClass(type, id, 'dragging');
     setTimeout(() => this.changeClass(type, id, `${type}-placeholder`), 0);
   }
 
-  dragEnd(type, id){
+  listEnd(e, type, id){
+    e.stopPropagation();
+    console.log('end:', type, id);
     this.changeClass(type, id, type);
   }
 
-  dragOver(e, type, id){
+  listOver(e, type, id){
+    e.stopPropagation();
     e.preventDefault();
   }
 
@@ -41,10 +55,12 @@ class App extends Component {
     return arr;
   }
 
-  dragEnter(e, type, id){
+  listEnter(e, type, id){
+    e.stopPropagation();
+    console.log('enter:', type, id);
     // setup
-    e.preventDefault();
-    let { listsData, oldId } = this.state;
+    // e.preventDefault();
+    let { listsData, cardsData, oldId } = this.state;
 
     // change styling
     this.addToClass(type, id, `${type}-placeholder`);
@@ -53,18 +69,30 @@ class App extends Component {
     }
 
     // find indexes based on id
-    let oldIndex = listsData.findIndex(list => list.list_id === oldId);
-    let newIndex = listsData.findIndex(list => list.list_id === id);
+    let oldIndex = null;
+    let newIndex = null;
+    let newArr;
+    if (type === 'list'){
+      oldIndex = listsData.findIndex(item => item.list_id === oldId);
+      newIndex = listsData.findIndex(item => item.list_id === id);
+      newArr = this.moveItem(listsData, oldIndex, newIndex);
+      this.setState({ listsData: newArr, oldIndex: newIndex });
+    } else if (type === 'card') {
+      oldIndex = cardsData.findIndex(item => item.card_id === oldId);
+      newIndex = cardsData.findIndex(item => item.card_id === id);
+      newArr = this.moveItem(cardsData, oldIndex, newIndex);
+      this.setState({ cardsData: newArr, oldIndex: newIndex });
+    }
 
     // get new order of items & setState
-    let newArr = this.moveItem(listsData, oldIndex, newIndex);
-    this.setState({ listsData: newArr, oldIndex: newIndex });
   }
 
-  dragLeave(type, id){
+  listLeave(e, type, id){
+    e.stopPropagation();
   }
 
-  dragDrop(type, id){
+  listDrop(e, type, id){
+    e.stopPropagation();
     this.changeClass(type, id, type);
   }
 
@@ -82,13 +110,13 @@ class App extends Component {
       let cards = cardsData.filter(card => card.list_id === list.list_id).map(card => {
         return (
           <div
-          // draggable="false"
-          // onDragStart={() => this.dragStart('card', card.card_id)}
-          // onDragEnd={() => this.dragEnd('card', card.card_id)}
-          // onDragOver={e => this.dragOver(e, 'card', card.card_id)}
-          // onDragEnter={e => this.dragEnter(e, 'card', card.card_id)}
-          // onDragLeave={() => this.dragLeave('card', card.card_id)}
-          // onDrop={() => this.dragDrop('card', card.card_id)}
+          draggable="true"
+          // onDragStart={e => this.listStart(e, 'card', card.card_id)}
+          // onDragEnd={e => this.listEnd(e, 'card', card.card_id)}
+          // onDragOver={e => this.listOver(e, 'card', card.card_id)}
+          // onDragEnter={e => this.listEnter(e, 'card', card.card_id)}
+          // onDragLeave={e => this.listLeave(e, 'card', card.card_id)}
+          // onDrop={e => this.listDrop(e, 'card', card.card_id)}
           className="card" id={`card-${card.card_id}`}>
             <h3>{card.card_name}</h3>
           </div>
@@ -97,12 +125,12 @@ class App extends Component {
       return (
         <div
         draggable="true"
-        onDragStart={() => this.dragStart('list', list.list_id)}
-        onDragEnd={() => this.dragEnd('list', list.list_id)}
-        onDragOver={e => this.dragOver(e, 'list', list.list_id)}
-        onDragEnter={e => this.dragEnter(e, 'list', list.list_id)}
-        onDragLeave={() => this.dragLeave('list', list.list_id)}
-        onDrop={() => this.dragDrop('list', list.list_id)}
+        onDragStart={e => this.listStart(e, 'list', list.list_id)}
+        onDragEnd={e => this.listEnd(e, 'list', list.list_id)}
+        onDragOver={e => this.listOver(e, 'list', list.list_id)}
+        onDragEnter={e => this.listEnter(e, 'list', list.list_id)}
+        onDragLeave={e => this.listLeave(e, 'list', list.list_id)}
+        onDrop={e => this.listDrop(e, 'list', list.list_id)}
         className="list" id={`list-${list.list_id}`}>
           <h2>{list.list_name}</h2>
           { cards }
